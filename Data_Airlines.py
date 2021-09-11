@@ -145,11 +145,13 @@ flight_finder_buttion.grid(row=0, column=4, padx=40)
 #=============== Seat booker page
 
 
-def fill_seat():
+def fill_seat(fd, confirmed_route):
     current_user = cursor.execute('SELECT * FROM t_user').fetchval()
     select_user_id = 'SELECT customer_id FROM customers WHERE customer_name = \'' + str(current_user) + '\''
     user_id = cursor.execute(select_user_id).fetchval()
-    cursor.execute('UPDATE plane_ticket SET customer_name = ' + str(user_id) + ' WHERE seat_id = \'' + str(seat_listbox.get(ANCHOR)) + '\'')
+    find_departure2 = 'SELECT DISTINCT departure_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
+    x = cursor.execute(find_departure2).fetchall()[fd]
+    cursor.execute('UPDATE plane_ticket SET customer_name = ' + str(user_id) + ' WHERE seat_id = \'' + str(seat_listbox.get(ANCHOR)) + '\' AND plane_route = \'' + str(confirmed_route) + '\' AND departure_time = \'' + str(x[0]) + '\'')
     cnxn.commit()
     s_seat = seat_listbox.get(ANCHOR)
     seat_confirm()
@@ -176,7 +178,7 @@ def function_test(fd, confirmed_route):
 
     for s in range(len(seat_count)):
         seat_listbox.insert(END, seat_count[s])
-    select_seat_button = Button(book_seat_page, text="Select Seat", command=fill_seat).grid(row=1, column=3, padx=10)
+    select_seat_button = Button(book_seat_page, text="Select Seat", command=lambda: fill_seat(fd, confirmed_route)).grid(row=1, column=3, padx=10)
 
 
 #=================== seat confirmation page
