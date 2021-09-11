@@ -1,1 +1,1 @@
-# Data-Airlines
+Data Airlines is a project that I developed to help me learn Python and how to use Python in congruence with SQL Server. It allows you to create an account, login with your account and purchace plane tickets from the fictional airline Data Airlines.
