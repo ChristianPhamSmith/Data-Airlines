@@ -213,6 +213,13 @@ def function_test(fd, confirmed_route):
     business_button = Button(book_seat_page, text=("Business Class"), command=lambda: show_business(fd, confirmed_route)).grid(row=2, column=1)
     economy_button = Button(book_seat_page, text=("Economy Class"), command=lambda: show_economy(fd, confirmed_route)).grid(row=2, column=2)
     select_seat_button = Button(book_seat_page, text="Select Seat", command=lambda: fill_seat(fd, confirmed_route)).grid(row=1, column=4, padx=10)
+    price_selector = 'SELECT cost FROM plane_routes WHERE route_id = \'' + str(confirmed_route) + '\''
+    f_price = int(cursor.execute(price_selector).fetchval() / 360 * 4)
+    b_price = int(cursor.execute(price_selector).fetchval() / 360 * 3)
+    e_price = int(cursor.execute(price_selector).fetchval() / 360 * 2)
+    Label(book_seat_page, text="$" + str(f_price)).grid(row=3, column=0)
+    Label(book_seat_page, text="$" + str(b_price)).grid(row=3, column=1)
+    Label(book_seat_page, text="$" + str(e_price)).grid(row=3, column=2)
 
 
 #=================== seat confirmation page
