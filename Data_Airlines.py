@@ -236,12 +236,19 @@ def seat_confirm():
     current_user_id = cursor.execute('SELECT customer_id FROM customers WHERE customer_name = \'' + str(current_user) + '\'').fetchval()
     select_user_seats = 'SELECT seat_id FROM plane_ticket WHERE customer_name = \'' + str(current_user_id) + '\''
     user_seats = [x[0] for x in cursor.execute(select_user_seats).fetchall()]
+    select_user_routes = 'SELECT plane_route FROM plane_ticket WHERE customer_name = \'' + str(current_user_id) + '\''
+    user_routes = cursor.execute(select_user_routes).fetchall()
     for s in range(len(user_seats)):
-        user_seats_listbox.insert(END, user_seats[s])
+        select_user_departure = 'SELECT departure_airport FROM plane_routes WHERE route_id = ' + str(user_routes[s][0]) + ''
+        departure = cursor.execute(select_user_departure).fetchall()
+        select_user_arrival = 'SELECT arrival_airport FROM plane_routes WHERE route_id = ' + str(user_routes[s][0]) + ''
+        arrival = cursor.execute(select_user_arrival).fetchall()
+        user_seats_listbox.insert(END, user_seats[s] + '   ' + str(departure[0][0] + ' - ' + str(arrival[0][0])))
 
 
 def refund():
-    cursor.execute('UPDATE plane_ticket SET customer_name = 1006 WHERE seat_id = \'' + str(user_seats_listbox.get(ANCHOR)) + '\'')
+    refund_seats = user_seats_listbox.get(ANCHOR)[0:3]
+    cursor.execute('UPDATE plane_ticket SET customer_name = 1006 WHERE seat_id = \'' + str(refund_seats) + '\'')
     cnxn.commit()
     user_seats_listbox.delete(user_seats_listbox.curselection())
 
