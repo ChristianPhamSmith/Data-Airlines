@@ -1,24 +1,30 @@
 from tkinter import *
 import pyodbc
 
+#defines SQL Server and database name
 server = "DESKTOP-DRDGQUL\SQLEXPRESS"
 database = "data_airlines"
 
+#creates SQL cursor
 cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server}; SERVER=' + server + '; DATABASE=' + database + '; Trusted_connection=yes;')
-
 cursor = cnxn.cursor()
 
+#insert statement for inserting row into customers
 insert_query = '''INSERT INTO customers
                   VALUES (?, ?);'''
-
+#creates root variable
 root = Tk()
+
+#defines root title
 root.title("Data Airlines Login")
 
 
+#function that chages what frame you are on when called
 def show_frame(frame):
     frame.tkraise()
 
 
+#lists each frame in program
 login_frame = Frame(root)
 create_account_frame = Frame(root)
 create_confirmation_frame = Frame(root)
@@ -26,9 +32,11 @@ flight_list_page = Frame(root)
 book_seat_page = Frame(root)
 seat_confirm_page = Frame(root)
 
+#makes frame display on whole screen
 for frame in (login_frame, create_account_frame, create_confirmation_frame, flight_list_page, book_seat_page, seat_confirm_page):
     frame.grid(row=0, column=0, sticky='nsew')
 
+#makes the login_frame the first frame shown
 show_frame(login_frame)
 
 
@@ -40,10 +48,12 @@ password = Label(login_frame, text="Password").grid(row=1, column=0)
 password_entry = Entry(login_frame, width=50)
 password_entry.grid(row=1, column=1, columnspan=3)
 
+
+#the login function tests if username and password belong to the same account. If they do then they gain access to the rest of the program and a temp user is created in SQL Server. Otherwise they are denied
 def login():
-    select_customers = 'SELECT customer_name FROM customers WHERE customer_name = \'' + user_name_entry.get() + '\' AND pass_word = \'' + password_entry.get() + '\''
+    select_customers = 'SELECT customer_name FROM customers WHERE customer_name = \'' + user_name_entry.get() + '\' AND password = \'' + password_entry.get() + '\''
     customer_name = cursor.execute(select_customers).fetchall()
-    select_password = 'SELECT pass_word FROM customers WHERE customer_name = \'' + user_name_entry.get() + '\' AND pass_word = \'' + password_entry.get() + '\''
+    select_password = 'SELECT pass_word FROM customers WHERE customer_name = \'' + user_name_entry.get() + '\' AND password = \'' + password_entry.get() + '\''
     pass_word = cursor.execute(select_password).fetchall()
     if customer_name == []:
         Label(login_frame, text="ACCESS DENIED!", font=50, fg="red").grid(row=4, column=1, columnspan=3)
@@ -70,6 +80,7 @@ new_password = Entry(create_account_frame, width=50)
 new_password.grid(row=1, column=1, columnspan=3)
 
 
+#creates account if none exists
 def create_account():
     confirm_unique = 'SELECT customer_name FROM customers WHERE customer_name = \'' + new_username.get() + '\''
     unique_account = cursor.execute(confirm_unique).fetchval()
@@ -100,10 +111,13 @@ airport_scrollbar.config(command=airport_listbox.yview)
 airport_scrollbar.grid(row=3, column=3, sticky=(N, S))
 
 
+#sets the departure airport
 def departure_set():
     departure_airport.delete(0, 'end')
     departure_airport.insert(0, airport_listbox.get(ANCHOR))
 
+
+#sets the arrival airport
 def arrival_set():
     arrival_airport.delete(0, 'end')
     arrival_airport.insert(0, airport_listbox.get(ANCHOR))
@@ -119,9 +133,12 @@ Label(flight_list_page, text='Airports').grid(row=1, column=2)
 select_airports = 'SELECT airport_code FROM airports'
 airport_code = cursor.execute(select_airports).fetchall()
 
+#displays all airports in database
 for i in range(len(airport_code)):
     airport_listbox.insert(END, [x for x in cursor.execute(select_airports).fetchall()[i]])
 
+
+#displays all flights on the selected route
 def find_flights():
     route_confirm = 'SELECT route_id FROM plane_routes WHERE departure_airport = \'' + departure_airport.get() + '\' AND arrival_airport = \'' + arrival_airport.get() + '\''
     confirmed_route = cursor.execute(route_confirm).fetchval()
@@ -143,6 +160,7 @@ flight_finder_button.grid(row=0, column=4, padx=40)
 #=============== Seat booker page
 
 
+#books selected seat for user
 def fill_seat(i, confirmed_route):
     current_user = cursor.execute('SELECT * FROM t_user').fetchval()
     select_user_id = 'SELECT customer_id FROM customers WHERE customer_name = \'' + str(current_user) + '\''
@@ -162,6 +180,7 @@ seat_scrollbar.config(command=seat_listbox.yview)
 seat_scrollbar.grid(row=1, column=3, sticky=(N, S))
 
 
+#shows all first class seats
 def show_first(i, confirmed_route):
     global seat_listbox
     seat_listbox.delete(0, END)
@@ -174,6 +193,7 @@ def show_first(i, confirmed_route):
         seat_listbox.insert(END, seat_count[i])
 
 
+#shows all business class seats
 def show_business(i, confirmed_route):
     global seat_listbox
     seat_listbox.delete(0, END)
@@ -185,6 +205,8 @@ def show_business(i, confirmed_route):
     for i in range(len(seat_count)):
         seat_listbox.insert(END, seat_count[i])
 
+
+#shows all economy class seats
 def show_economy(i, confirmed_route):
     global seat_listbox
     seat_listbox.delete(0, END)
@@ -197,6 +219,7 @@ def show_economy(i, confirmed_route):
         seat_listbox.insert(END, seat_count[i])
 
 
+#fills booker_main page with arrival and departure times, prices ,buttons and listbox
 def booker_main(i, confirmed_route):
     show_frame(book_seat_page)
     find_arrival2 = 'SELECT DISTINCT arrival_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
@@ -227,6 +250,7 @@ user_seat_scrollbar.config(command=user_seats_listbox.yview)
 user_seat_scrollbar.grid(row=0, column=1, sticky=(N, S), pady=25)
 
 
+#shows list of seats that a user has booked
 def seat_confirm():
     show_frame(seat_confirm_page)
     current_user = cursor.execute('SELECT * FROM t_user').fetchval()
@@ -243,6 +267,7 @@ def seat_confirm():
         user_seats_listbox.insert(END, user_seats[i] + '   ' + str(departure[0][0] + ' - ' + str(arrival[0][0])))
 
 
+#removes seat from a user's booked seats
 def refund():
     refund_seats = user_seats_listbox.get(ANCHOR)[0:3]
     cursor.execute('UPDATE plane_ticket SET customer_name = 1006 WHERE seat_id = \'' + str(refund_seats) + '\'')
@@ -250,9 +275,11 @@ def refund():
     user_seats_listbox.delete(user_seats_listbox.curselection())
 
 
+#goes to flight list frame
 def goto_flight_list():
     user_seats_listbox.delete(0, END)
     show_frame(flight_list_page)
+
 
 Button(seat_confirm_page, text='Refund plane ticket', command=refund).grid(row=0, column=2, padx=20)
 
@@ -262,10 +289,12 @@ goto_flight_list_button = Button(seat_confirm_page, text='Book flight', command=
 #=================== window closed
 
 
+#clears the t_user column in SQL Server when closing the program
 def on_closing():
     cursor.execute('DELETE FROM t_user')
     cnxn.commit()
     root.destroy()
+
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
