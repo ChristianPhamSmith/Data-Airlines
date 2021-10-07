@@ -53,8 +53,6 @@ password_entry.grid(row=1, column=1, columnspan=3)
 def login():
     select_customers = 'SELECT customer_name FROM customers WHERE customer_name = \'' + user_name_entry.get() + '\' AND password = \'' + password_entry.get() + '\''
     customer_name = cursor.execute(select_customers).fetchall()
-    select_password = 'SELECT pass_word FROM customers WHERE customer_name = \'' + user_name_entry.get() + '\' AND password = \'' + password_entry.get() + '\''
-    pass_word = cursor.execute(select_password).fetchall()
     if customer_name == []:
         Label(login_frame, text="ACCESS DENIED!", font=50, fg="red").grid(row=4, column=1, columnspan=3)
     else:
@@ -144,13 +142,12 @@ def find_flights():
     confirmed_route = cursor.execute(route_confirm).fetchval()
     find_departure = 'SELECT DISTINCT departure_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
     departure_time = cursor.execute(find_departure).fetchall()
-    for i in range(len(departure_time)):
-        row_add = i + 4
-        Label(flight_list_page, text=[x[0] for x in departure_time][i]).grid(row=row_add, column=0, padx=10, pady=10)
+    for ticket_idx in range(len(departure_time)):
+        row_add = ticket_idx + 4
+        Label(flight_list_page, text=[x[0] for x in departure_time][ticket_idx]).grid(row=row_add, column=0, padx=10, pady=10)
         find_arrival = 'SELECT DISTINCT arrival_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
-        Label(flight_list_page, text=[x[0] for x in cursor.execute(find_arrival).fetchall()][i]).grid(row=row_add, column=1)
-
-        flight_select_button = Button(flight_list_page, text="SELECT FLIGHT", command=lambda i=i: booker_main(i, confirmed_route))
+        Label(flight_list_page, text=[x[0] for x in cursor.execute(find_arrival).fetchall()][ticket_idx]).grid(row=row_add, column=1)
+        flight_select_button = Button(flight_list_page, text="SELECT FLIGHT", command=lambda ticket_idx=ticket_idx: booker_main(ticket_idx, confirmed_route))
         flight_select_button.grid(row=row_add, column=2, padx=10)
 
 
@@ -161,12 +158,12 @@ flight_finder_button.grid(row=0, column=4, padx=40)
 
 
 #books selected seat for user
-def fill_seat(i, confirmed_route):
+def fill_seat(ticket_idx, confirmed_route):
     current_user = cursor.execute('SELECT * FROM t_user').fetchval()
     select_user_id = 'SELECT customer_id FROM customers WHERE customer_name = \'' + str(current_user) + '\''
     user_id = cursor.execute(select_user_id).fetchval()
     find_departure2 = 'SELECT DISTINCT departure_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
-    departure_airport2 = cursor.execute(find_departure2).fetchall()[i]
+    departure_airport2 = cursor.execute(find_departure2).fetchall()[ticket_idx]
     cursor.execute('UPDATE plane_ticket SET customer_name = ' + str(user_id) + ' WHERE seat_id = \'' + str(seat_listbox.get(ANCHOR)) + '\' AND plane_route = \'' + str(confirmed_route) + '\' AND departure_time = \'' + str(departure_airport2[0]) + '\'')
     cnxn.commit()
     s_seat = seat_listbox.get(ANCHOR)
@@ -181,12 +178,12 @@ seat_scrollbar.grid(row=1, column=3, sticky=(N, S))
 
 
 #shows all first class seats
-def show_first(i, confirmed_route):
+def show_first(ticket_idx, confirmed_route):
     global seat_listbox
     seat_listbox.delete(0, END)
     find_arrival_f = 'SELECT DISTINCT arrival_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
     arrival_airport_f = [z[0] for z in cursor.execute(find_arrival_f).fetchall()]
-    my_arrival_f = arrival_airport_f[i]
+    my_arrival_f = arrival_airport_f[ticket_idx]
     seats = 'SELECT seat_id FROM plane_ticket WHERE (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_f) + '\' AND customer_name = 1006 and seat_id LIKE \'%01\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_f) + '\' AND customer_name = 1006 and seat_id LIKE \'%02\')'
     seat_count = [x[0] for x in cursor.execute(seats).fetchall()]
     for i in range(len(seat_count)):
@@ -194,12 +191,12 @@ def show_first(i, confirmed_route):
 
 
 #shows all business class seats
-def show_business(i, confirmed_route):
+def show_business(ticket_idx, confirmed_route):
     global seat_listbox
     seat_listbox.delete(0, END)
     find_arrival_b = 'SELECT DISTINCT arrival_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
     arrival_airport_b = [z[0] for z in cursor.execute(find_arrival_b).fetchall()]
-    my_arrival_b = arrival_airport_b[i]
+    my_arrival_b = arrival_airport_b[ticket_idx]
     seats = 'SELECT seat_id FROM plane_ticket WHERE (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%03\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%04\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%05\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%05\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%06\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%07\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%08\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%09\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%10\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%11\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%12\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_b) + '\' AND customer_name = 1006 and seat_id LIKE \'%13\')'
     seat_count = [x[0] for x in cursor.execute(seats).fetchall()]
     for i in range(len(seat_count)):
@@ -207,12 +204,12 @@ def show_business(i, confirmed_route):
 
 
 #shows all economy class seats
-def show_economy(i, confirmed_route):
+def show_economy(ticket_idx, confirmed_route):
     global seat_listbox
     seat_listbox.delete(0, END)
     find_arrival_e = 'SELECT DISTINCT arrival_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
     arrival_airport_e = [z[0] for z in cursor.execute(find_arrival_e).fetchall()]
-    my_arrival_e = arrival_airport_e[i]
+    my_arrival_e = arrival_airport_e[ticket_idx]
     seats = 'SELECT seat_id FROM plane_ticket WHERE (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%14\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%15\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%16\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%17\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%18\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%19\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%20\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%21\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%22\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%23\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%24\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%25\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%26\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%27\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%28\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%29\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%30\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%31\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%32\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%33\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%34\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%35\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%36\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%37\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%38\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%39\') OR (plane_route = \'' + str(confirmed_route) + '\' AND arrival_time = \'' + str(my_arrival_e) + '\' AND customer_name = 1006 and seat_id LIKE \'%40\')'
     seat_count = [x[0] for x in cursor.execute(seats).fetchall()]
     for i in range(len(seat_count)):
@@ -220,22 +217,23 @@ def show_economy(i, confirmed_route):
 
 
 #fills booker_main page with arrival and departure times, prices ,buttons and listbox
-def booker_main(i, confirmed_route):
+def booker_main(ticket_idx, confirmed_route):
+    global seat_listbox
     show_frame(book_seat_page)
     find_arrival2 = 'SELECT DISTINCT arrival_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
     find_departure2 = 'SELECT DISTINCT departure_time FROM plane_ticket WHERE plane_route = \'' + str(confirmed_route) + '\''
-    arrival2 = cursor.execute(find_arrival2).fetchall()[i]
-    departure_2 = cursor.execute(find_departure2).fetchall()[i]
+    arrival2 = cursor.execute(find_arrival2).fetchall()[ticket_idx]
+    departure_2 = cursor.execute(find_departure2).fetchall()[ticket_idx]
     Label(book_seat_page, text=str(departure_2[0]) + ' - ' + str(arrival2[0])).grid(row=1, column=0, columnspan=2, padx=25, pady=25)
-    global seat_listbox
-    Button(book_seat_page, text=("First Class"), command=lambda: show_first(i, confirmed_route)).grid(row=2, column=0)
-    Button(book_seat_page, text=("Business Class"), command=lambda: show_business(i, confirmed_route)).grid(row=2, column=1)
-    Button(book_seat_page, text=("Economy Class"), command=lambda: show_economy(i, confirmed_route)).grid(row=2, column=2)
-    Button(book_seat_page, text="Select Seat", command=lambda: fill_seat(i, confirmed_route)).grid(row=1, column=4, padx=10)
+    Button(book_seat_page, text=("First Class"), command=lambda: show_first(ticket_idx, confirmed_route)).grid(row=2, column=0)
+    Button(book_seat_page, text=("Business Class"), command=lambda: show_business(ticket_idx, confirmed_route)).grid(row=2, column=1)
+    Button(book_seat_page, text=("Economy Class"), command=lambda: show_economy(ticket_idx, confirmed_route)).grid(row=2, column=2)
+    Button(book_seat_page, text="Select Seat", command=lambda: fill_seat(ticket_idx, confirmed_route)).grid(row=1, column=4, padx=10)
     price_selector = 'SELECT cost FROM plane_routes WHERE route_id = \'' + str(confirmed_route) + '\''
-    f_price = int(cursor.execute(price_selector).fetchval() / 360 * 4)
-    b_price = int(cursor.execute(price_selector).fetchval() / 360 * 3)
-    e_price = int(cursor.execute(price_selector).fetchval() / 360 * 2)
+    seat_count = cursor.execute('SELECT seat_count FROM plane_type WHERE plane_type_id = 1').fetchval()
+    f_price = int(cursor.execute(price_selector).fetchval() / seat_count * 4)
+    b_price = int(cursor.execute(price_selector).fetchval() / seat_count * 3)
+    e_price = int(cursor.execute(price_selector).fetchval() / seat_count * 2)
     Label(book_seat_page, text="$" + str(f_price)).grid(row=3, column=0)
     Label(book_seat_page, text="$" + str(b_price)).grid(row=3, column=1)
     Label(book_seat_page, text="$" + str(e_price)).grid(row=3, column=2)
@@ -266,6 +264,10 @@ def seat_confirm():
         arrival = cursor.execute(select_user_arrival).fetchall()
         user_seats_listbox.insert(END, user_seats[i] + '   ' + str(departure[0][0] + ' - ' + str(arrival[0][0])))
 
+#SELECT
+	#seat_id
+#FROM plane_ticket
+#WHERE RIGHT(seat_id,LEN(seat_id) - 1) IN (03,04,05)
 
 #removes seat from a user's booked seats
 def refund():
