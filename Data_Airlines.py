@@ -166,7 +166,6 @@ def fill_seat(ticket_idx, confirmed_route):
     departure_airport2 = cursor.execute(find_departure2).fetchall()[ticket_idx]
     cursor.execute('UPDATE plane_ticket SET customer_name = ' + str(user_id) + ' WHERE seat_id = \'' + str(seat_listbox.get(ANCHOR)) + '\' AND plane_route = \'' + str(confirmed_route) + '\' AND departure_time = \'' + str(departure_airport2[0]) + '\'')
     cnxn.commit()
-    s_seat = seat_listbox.get(ANCHOR)
     seat_confirm()
 
 
@@ -265,10 +264,7 @@ def seat_confirm():
         arrival = cursor.execute(select_user_arrival).fetchall()
         user_seats_listbox.insert(END, user_seats[i] + '   ' + str(departure[0][0] + ' - ' + str(arrival[0][0])))
 
-#SELECT
-	#seat_id
-#FROM plane_ticket
-#WHERE RIGHT(seat_id,LEN(seat_id) - 1) IN (03,04,05)
+
 
 #removes seat from a user's booked seats
 def refund():
